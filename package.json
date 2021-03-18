@@ -1,0 +1,13 @@
+{
+  "name": "@local/firebase-slim",
+  "license": "MIT",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=14.3"
+  },
+  "dependencies": {
+    "firebase": "^0.900.17"
+  },
+  "//comments": {}
+}
