@@ -11,8 +11,8 @@ Potential for size reduction:
 ||before|after|
 |---|---|---|
 |`firebase`|18M|216K (-98.8%)|
-|`@firebase`|||
-|with dependencies|||
+|`@firebase`|47M|23M|
+|with dependencies|80M|55M|
 
 
 ## Why do this?

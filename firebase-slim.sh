@@ -21,13 +21,11 @@ set -euf -o pipefail
 # This folder is simply a proxy to `@firebase/xxx` subpackages. It should not weigh much.
 #
 # Initial:  18MB
-# Reached:  ...
+# Reached:  128KB
 #
 DIR=node_modules/firebase
 
 # rm *.cjs.*
-#
-# CommonJS not needed
 #
 find $DIR -name "*.cjs.*" | xargs echo rm -f
 
@@ -49,51 +47,80 @@ find $DIR/firestore/lite/dist -type d -depth 1 ! -name 'firestore' | xargs echo 
 #
 # (what are they for? folders like 'firebase/analytics' are used, right?)
 #
-ls $DIR/*.js $DIR/*.js.map 2>/dev/null | xargs echo rm -f
+(ls $DIR/*.js $DIR/*.js.map 2>/dev/null || true) | xargs echo rm -f
 
-#echo rm -f $DIR/*.js $DIR/*.js.map
+#--- node_modules/@firebase
+#
+# These are the real implementations.
+#
+# Initial:  47MB
+# Reached:  ...
+#
+DIR=node_modules/@firebase
 
-#---
+# rm *.cjs.*
+#
+find $DIR -name "*.cjs.*" | xargs echo rm -f
 
+# rm 'src', 'test', 'testing' subdirs
 #
-# POP=$(pwd)
-# #cd node_modules/@firebase
+find $DIR \( -name "src" -or -name "test" -or -name "testing" \) | xargs echo rm -rf
+
+# rm 'esm5' (there is no such thing)
 #
-# echo "# Commands to execute, to skin down 'node_modules/@firebase"
-# echo "#"
+# The folders having such files also have "esm2017" or plain ESM.
 #
-# #--- Directories ---
+find $DIR \( -name "*.esm5.js" -or -name "*.esm5.js.map" \) | xargs echo rm -f
+find $DIR -name "esm5" | xargs echo rm -rf
+
+# Cordova, React Native (rn), Web worker
 #
-# #./database/exp-types
-# #./firestore-types
-# #./storage-types
-# #./app-types
-# #./auth-interop-types
-# #./messaging-types
-# #./database-types
-# #
-# #find . -name "*-types" | xargs echo "rm -rf"
+# Do they really need their own packaging??
 #
-# # src, test, testing
-# find . -name "src" | xargs echo "rm -rf"
-# find . -name "test" | xargs echo "rm -rf"
+find $DIR \( -name "cordova" -or -name "rn" \) | xargs echo rm -rf
+find $DIR \( -name "*.cordova.*" -or -name "*.rn.*" \) | xargs echo rm -f
+
+# "Scripts"
 #
-# # anything 'esm5', 'cordova', 'webworkers', 'rn' (React Native)
-# # node-cjs
+find $DIR -name "scripts" | xargs echo rm -rf
+
+
+# Empty folders, at least after the above cleanups.
 #
-# # anything "*compat", "lite"
+find $DIR/app/dist -name "packages-exp" | xargs echo rm -rf
+
+# Not quite sure of these
 #
-# # node_modules
+# find $DIR/database/dist/exp -depth 1 -name exp | xargs echo rm -rf
+# find $DIR/firestore -depth 1 -name bundle | xargs echo rm -rf
+find $DIR -name "*.sw.*" | xargs echo rm -f
+
+
+
+# OPTIONAL: Web worker
 #
-# #--- Files ---
+# Does it need its own packaging??
 #
-# # *.rn.* (maps)
-# # *.esm5.*
-# # *.cjs
+# find $DIR -name "*.webworker.*" | xargs echo rm -f
+
+
+# OPTIONAL: Node
 #
+# Does it need its own packaging??
 #
-# cd $(POP)
+# find $DIR -name "*.node.*" | xargs echo rm -f
+# find $DIR -name "node" | xargs echo rm -rf
+
+
+# OPTIONAL: Remove '.esm.js' (where there is '.esm2017.js')
 #
-# du -h node_modules/@firebase
+#   It may be good to ship both ESM and ESM2017. These represent different maturity levels in browsers.
 #
-#
+# find $DIR/analytics $DIR/component $DIR/database \( -name "*.esm.js" -or -name "*.esm.js.map" \) | xargs echo rm -f
+
+# find $DIR/app-compat -name "*.lite.js" | xargs echo rm -f
+
+
+
+# the end
+
